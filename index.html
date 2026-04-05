@@ -12,9 +12,9 @@
     <div class="header-content">
         <div class="title-container">
             <div class="puppet-ghost-wrap">
-                <img src="./puppet.webp" alt="" class="puppet-ghost" aria-hidden="true">
-                <img src="./puppet.webp" alt="" class="puppet-ghost red" aria-hidden="true">
-                <img src="./puppet.webp" alt="" class="puppet-ghost blue" aria-hidden="true">
+                <img src="../images/puppet.webp" alt="" class="puppet-ghost" aria-hidden="true">
+                <img src="../images/puppet.webp" alt="" class="puppet-ghost red" aria-hidden="true">
+                <img src="../images/puppet.webp" alt="" class="puppet-ghost blue" aria-hidden="true">
             </div>
             <div class="text-stack">
                 <p class="game-label">Five Nights at Freddy's Co-op</p>
@@ -77,8 +77,8 @@ function puppetize(el, stringHeight, originDist, fallStaggerBase, fallStaggerSte
     fallStaggerBase = fallStaggerBase || 200;
     fallStaggerStep = fallStaggerStep || 60;
 
-    const FALL_DUR = 2100;
-    const MAX_SWING = 11;
+    const FALL_DUR   = 2100;
+    const MAX_SWING  = 11;
     const SWING_FREQ = 2.6;
 
     const text = el.textContent;
@@ -91,9 +91,17 @@ function puppetize(el, stringHeight, originDist, fallStaggerBase, fallStaggerSte
         span.classList.add('puppet-letter');
         if (isSpace) span.classList.add('puppet-space');
 
-        span.style.setProperty('--str-h', stringHeight + 'px');
-        span.style.setProperty('--origin-y', '-' + originDist + 'px');
-        span.style.opacity = '0';
+        const swayDur   = (3.2 + Math.random() * 3.6).toFixed(2);
+        const swayAmp   = ((Math.random() * 3.4) - 1.7).toFixed(2);
+        const swayDelay = (-(Math.random() * 6)).toFixed(2);
+
+        span.style.setProperty('--str-h',      stringHeight + 'px');
+        span.style.setProperty('--origin-y',   '-' + originDist + 'px');
+        span.style.setProperty('--sway-dur',   swayDur + 's');
+        span.style.setProperty('--sway-amp',   swayAmp);
+        span.style.setProperty('--sway-delay', swayDelay + 's');
+        span.style.opacity   = '0';
+        span.style.animation = 'none'; /* hold sway until fall ends */
 
         const delayMs = fallStaggerBase + i * fallStaggerStep;
 
@@ -101,27 +109,26 @@ function puppetize(el, stringHeight, originDist, fallStaggerBase, fallStaggerSte
             setTimeout(() => {
                 const startY = -(window.innerHeight * 0.94);
                 let t0 = null;
-
-                span.style.opacity = '1';
+                span.style.opacity         = '1';
                 span.style.transformOrigin = '50% 50%';
 
                 function tick(now) {
                     if (!t0) t0 = now;
-                    const elapsed = now - t0;
-                    const p = Math.min(elapsed / FALL_DUR, 1);
-
+                    const p  = Math.min((now - t0) / FALL_DUR, 1);
                     const ep = 1 - Math.pow(1 - p, 3);
                     const ty = startY * (1 - ep);
-
                     const amp = MAX_SWING * Math.pow(1 - p, 1.5);
                     const rot = amp * Math.sin(i * 0.7 + p * Math.PI * 2 * SWING_FREQ);
-
                     span.style.transform = `translateY(${ty.toFixed(1)}px) rotate(${rot.toFixed(3)}deg)`;
 
                     if (p < 1) {
                         requestAnimationFrame(tick);
                     } else {
-                        span.style.transform = '';
+                        /* Seamlessly hand off to CSS letterSway — zero JS overhead */
+                        span.style.transform       = '';
+                        span.style.transformOrigin = '50% -' + originDist + 'px';
+                        span.style.animation =
+                            `letterSway ${swayDur}s ease-in-out ${swayDelay}s infinite alternate`;
                     }
                 }
                 requestAnimationFrame(tick);

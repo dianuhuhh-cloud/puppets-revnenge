@@ -138,7 +138,6 @@ body {
     margin: 0;
     text-transform: uppercase;
     text-shadow: 0 0 40px rgba(255,255,255,0.08);
-    animation: titleGlitch 7s infinite;
 }
 
 @keyframes titleGlitch {
@@ -163,6 +162,12 @@ body {
     display: inline-block;
     position: relative;
     transform-origin: 50% var(--origin-y, -300px);
+    animation: letterSway var(--sway-dur, 4s) ease-in-out var(--sway-delay, 0s) infinite alternate;
+}
+
+@keyframes letterSway {
+    from { transform: rotate(calc(var(--sway-amp, 1) * -1deg)); }
+    to   { transform: rotate(calc(var(--sway-amp, 1) *  1deg)); }
 }
 
 .puppet-letter::before {
